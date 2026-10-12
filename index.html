@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3 Patti Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#17483a; --felt-deep:#0f3329; --card:#ffffff; --ink:#1c1c1c; --muted:#5f6b66;
+  --line:#dfe5e2; --red:#c8102e; --gain:#13795b; --chip:#f1f4f2; --chip-on:#17483a; --chip-on-ink:#ffffff;
+  --gold:#e3b23c;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --felt:#0f3329; --felt-deep:#0a241d; --card:#1a201e; --ink:#eef2f0; --muted:#9aa8a2;
+    --line:#2c3633; --red:#ff5a6e; --gain:#4fd1a5; --chip:#242c29; --chip-on:#e3b23c; --chip-on-ink:#1a201e;
+  }
+}
+:root[data-theme="dark"]{
+  --felt:#0f3329; --felt-deep:#0a241d; --card:#1a201e; --ink:#eef2f0; --muted:#9aa8a2;
+  --line:#2c3633; --red:#ff5a6e; --gain:#4fd1a5; --chip:#242c29; --chip-on:#e3b23c; --chip-on-ink:#1a201e;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--felt);color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 96px}
+header{color:#fff;padding:8px 4px 16px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+header h1{margin:0;font-weight:800;font-size:2rem;letter-spacing:-.02em;line-height:1}
+header h1 span{color:var(--gold)}
+header p{margin:6px 0 0;opacity:.8;font-size:.9rem}
+.pot{text-align:right;font-size:.85rem;opacity:.9}
+.pot b{display:block;font-size:1.4rem;font-weight:800}
+.panel{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px}
+.panel h2{margin:0 0 4px;font-size:1.15rem;font-weight:800}
+.hint{margin:0 0 12px;color:var(--muted);font-size:.88rem}
+.step{font-weight:600;font-size:.9rem;margin:12px 0 6px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:0;background:var(--chip);color:var(--ink);font:inherit;font-weight:600;
+  padding:10px 14px;border-radius:999px;cursor:pointer;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--chip-on);color:var(--chip-on-ink)}
+.chip:disabled{opacity:.35;cursor:not-allowed}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.amount-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+input[type=number],input[type=text]{font:inherit;color:var(--ink);background:var(--chip);border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;min-height:44px;width:100%}
+.amount-row input{max-width:130px}
+.primary{border:0;width:100%;margin-top:14px;background:var(--red);color:#fff;font:inherit;font-weight:800;
+  font-size:1.05rem;padding:14px;border-radius:14px;cursor:pointer;min-height:52px}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.ghost{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600;
+  padding:10px 14px;border-radius:12px;cursor:pointer;min-height:44px}
+.preview{margin-top:10px;font-size:.95rem;color:var(--muted);min-height:1.4em}
+.preview b{color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:9px 6px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.8rem;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+.pos{color:var(--gain);font-weight:700}
+.neg{color:var(--red);font-weight:700}
+.log{list-style:none;margin:0;padding:0;max-height:340px;overflow:auto}
+.log li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.log li:last-child{border-bottom:0}
+.log .t{color:var(--muted);font-size:.8rem;width:44px;flex:none}
+.log .d{flex:1}
+.log .x{border:0;background:transparent;color:var(--muted);font-size:1.3rem;cursor:pointer;width:40px;height:40px;border-radius:10px}
+.empty{color:var(--muted);font-size:.92rem;padding:6px 0}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--felt-deep);display:flex;justify-content:center;
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));gap:6px;z-index:5}
+.tabs button{flex:1;max-width:180px;border:0;background:transparent;color:#cfe0d9;font:inherit;font-weight:600;
+  padding:10px;border-radius:12px;cursor:pointer;min-height:48px}
+.tabs button[aria-selected="true"]{background:var(--gold);color:#1a201e}
+.final-grid{display:grid;grid-template-columns:1fr 120px;gap:8px;align-items:center}
+.final-grid label{font-weight:600}
+.warn{background:#fff4d6;color:#5b4300;border-radius:12px;padding:10px 12px;font-size:.92rem;margin:12px 0}
+.ok{background:#e3f5ec;color:#0d5a43;border-radius:12px;padding:10px 12px;font-size:.92rem;margin:12px 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .warn{background:#3a2f12;color:#f3d98b}
+  :root:not([data-theme="light"]) .ok{background:#123a2d;color:#9fe6c8}}
+.pay{list-style:none;padding:0;margin:0}
+.pay li{padding:10px 0;border-bottom:1px solid var(--line);font-size:1.05rem}
+.pay .amt{float:right;font-weight:800;font-variant-numeric:tabular-nums}
+#payPanel.flash{outline:3px solid var(--gold)}
+.pay li:last-child{border-bottom:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.row > *{flex:1}
+.names{display:grid;gap:8px}
+.names .n{display:flex;gap:8px}
+.names .n button{flex:none;width:44px}
+textarea.copy{position:absolute;left:-9999px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));
+  background:var(--ink);color:var(--card);padding:10px 16px;border-radius:12px;font-weight:600;opacity:0;
+  transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20;
+  padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet{background:var(--card);color:var(--ink);border-radius:18px;padding:18px;width:100%;max-width:480px}
+.sheet p{margin:0 0 4px;font-size:1.05rem;font-weight:600}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>3 Patti <span>Ledger</span></h1>
+      <p>Loans during the game, profit and loss at the end</p>
+    </div>
+    <div class="pot">Money on table<b id="potTotal">€0</b></div>
+  </header>
+
+  <!-- PLAY TAB -->
+  <section id="tab-play">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <h2>Record a loan</h2>
+        <button class="ghost" id="editPlayers">Add or remove players</button>
+      </div>
+      <p class="hint">Tap who gives the money, who takes it, and how much.</p>
+      <p class="warn" id="needPlayers" hidden>Add at least 2 players to start recording loans.</p>
+      <div class="step">Who gives</div>
+      <div class="chips" id="lenderChips"></div>
+      <div class="step">Who takes</div>
+      <div class="chips" id="borrowerChips"></div>
+      <div class="step">Amount (€)</div>
+      <div class="chips" id="amountChips"></div>
+      <div class="amount-row">
+        <input type="number" id="customAmount" inputmode="decimal" min="0" step="0.1" placeholder="Other amount" aria-label="Other amount">
+      </div>
+      <div class="preview" id="preview"></div>
+      <button class="primary" id="addLoan" disabled>Add loan</button>
+    </div>
+
+    <div class="panel">
+      <h2>Loan balance</h2>
+      <p class="hint">Plus means others owe this player. Minus means this player owes others.</p>
+      <table>
+        <thead><tr><th>Player</th><th>Gave</th><th>Took</th><th>Net</th></tr></thead>
+        <tbody id="netBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <h2>Loan history</h2>
+        <button class="ghost" id="undo">Undo last</button>
+      </div>
+      <ul class="log" id="log"></ul>
+    </div>
+  </section>
+
+  <!-- SETTLE TAB -->
+  <section id="tab-settle" hidden>
+    <div class="panel">
+      <h2>Final balances</h2>
+      <p class="hint">When the game closes, enter how much money each player has in hand.</p>
+      <div class="final-grid" id="finalGrid"></div>
+      <div id="checkMsg"></div>
+      <button class="primary" id="finishGame" style="background:#17483a">Finish game and show payments</button>
+    </div>
+
+    <div class="panel">
+      <h2>Profit and loss</h2>
+      <p class="hint">Final balance + loan balance − buy-in.</p>
+      <table>
+        <thead><tr><th>Player</th><th>Final</th><th>Loans</th><th>Result</th></tr></thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="payPanel" tabindex="-1">
+      <h2>Final payments</h2>
+      <p class="hint">Who sends how much to whom, using the fewest payments.</p>
+      <ul class="pay" id="payList"></ul>
+      <div class="row">
+        <a class="primary" id="sendWhatsApp" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:0;background:#1fa855">Send result to WhatsApp</a>
+      </div>
+      <div class="row">
+        <button class="ghost" id="copySummary">Copy summary</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP TAB -->
+  <section id="tab-setup" hidden>
+    <div class="panel">
+      <h2>Players tonight</h2>
+      <p class="hint">Add anyone who joins and remove anyone who isn't playing. Tap a name to rename it.</p>
+      <div class="names" id="names"></div>
+      <div class="row">
+        <input type="text" id="newName" placeholder="New player name" aria-label="New player name">
+        <button class="ghost" id="addPlayer" style="flex:none">Add player</button>
+      </div>
+      <div class="row">
+        <button class="ghost" id="clearPlayers">Remove all players</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Buy-in</h2>
+      <p class="hint">What each player takes from the bank at the start.</p>
+      <div class="amount-row"><input type="number" id="buyIn" inputmode="decimal" min="0" step="0.5" aria-label="Buy-in per player"><span>€ per player</span></div>
+    </div>
+    <div class="panel">
+      <h2>New game</h2>
+      <p class="hint">Clears loans and final balances. Players and buy-in stay.</p>
+      <button class="primary" id="resetGame">Start new game</button>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-tab="play">Play</button>
+  <button role="tab" aria-selected="false" data-tab="settle">Settle</button>
+  <button role="tab" aria-selected="false" data-tab="setup">Players</button>
+</nav>
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="modalMsg">
+    <p id="modalMsg"></p>
+    <div class="row"><button class="ghost" id="modalNo">Cancel</button><button class="primary" id="modalYes" style="margin-top:0">OK</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  const KEY = "teenpatti-ledger-v1";
+  const DEFAULT = {
+    players:[
+      {id:"p1",name:"Ashish"},{id:"p2",name:"Amit"},{id:"p3",name:"Abhishek"},
+      {id:"p4",name:"Nitin"},{id:"p5",name:"Rakesh"},{id:"p6",name:"Ravi"},{id:"p7",name:"Vinod"}
+    ],
+    buyIn:5, loans:[], finals:{}, nextId:8
+  };
+  let state;
+  try{ const raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : null; }catch(e){ state = null; }
+  if(!state || !Array.isArray(state.players)) state = JSON.parse(JSON.stringify(DEFAULT));
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  const sel = {lender:null, borrower:null, amount:null};
+  const $ = id => document.getElementById(id);
+  const eur = n => "€" + (Math.round(n*100)/100).toFixed(2).replace(/\.00$/,"");
+  const signed = n => { const r=Math.round(n*100)/100; return (r>0?"+":r<0?"−":"") + eur(Math.abs(r)); };
+  const cls = n => { const r=Math.round(n*100)/100; return r>0?"pos":r<0?"neg":""; };
+  const nameOf = id => (state.players.find(p=>p.id===id)||{name:"(removed)"}).name;
+  const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  function ask(msg,yesLabel,onYes){
+    const m=$("modal"); $("modalMsg").textContent=msg; $("modalYes").textContent=yesLabel||"OK";
+    m.hidden=false; $("modalYes").focus();
+    const close=()=>{ m.hidden=true; $("modalYes").onclick=null; $("modalNo").onclick=null; m.onclick=null; };
+    $("modalYes").onclick=()=>{ close(); onYes(); };
+    $("modalNo").onclick=close;
+    m.onclick=e=>{ if(e.target===m) close(); };
+  }
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),1600); }
+
+  function nets(){
+    const m = {}; state.players.forEach(p=>m[p.id]={gave:0,took:0});
+    state.loans.forEach(l=>{ if(m[l.from]) m[l.from].gave+=l.amount; if(m[l.to]) m[l.to].took+=l.amount; });
+    return m;
+  }
+
+  function chipSet(container, key){
+    const el=$(container); el.innerHTML="";
+    state.players.forEach(p=>{
+      const b=document.createElement("button"); b.className="chip"; b.textContent=p.name;
+      b.setAttribute("aria-pressed", sel[key]===p.id ? "true":"false");
+      const other = key==="lender" ? sel.borrower : sel.lender;
+      b.disabled = other===p.id;
+      b.onclick=()=>{ sel[key] = sel[key]===p.id ? null : p.id; renderPlay(); };
+      el.appendChild(b);
+    });
+  }
+
+  function renderAmounts(){
+    const el=$("amountChips"); el.innerHTML="";
+    [1,2,3,4,5,6,8,10].forEach(a=>{
+      const b=document.createElement("button"); b.className="chip"; b.textContent="€"+a;
+      b.setAttribute("aria-pressed", sel.amount===a && !$("customAmount").value ? "true":"false");
+      b.onclick=()=>{ $("customAmount").value=""; sel.amount = sel.amount===a ? null : a; renderPlay(); };
+      el.appendChild(b);
+    });
+  }
+
+  function currentAmount(){
+    const c=parseFloat($("customAmount").value);
+    if(!isNaN(c) && c>0) return c;
+    return sel.amount;
+  }
+
+  function renderPlay(){
+    $("needPlayers").hidden = state.players.length >= 2;
+    chipSet("lenderChips","lender"); chipSet("borrowerChips","borrower"); renderAmounts();
+    const amt=currentAmount();
+    const ready = sel.lender && sel.borrower && amt;
+    $("addLoan").disabled = !ready;
+    $("preview").innerHTML = ready
+      ? `<b>${esc(nameOf(sel.lender))}</b> gives <b>${eur(amt)}</b> to <b>${esc(nameOf(sel.borrower))}</b>`
+      : "";
+    const m=nets(); const body=$("netBody"); body.innerHTML="";
+    state.players.forEach(p=>{
+      const n=m[p.id].gave-m[p.id].took;
+      body.insertAdjacentHTML("beforeend",
+        `<tr><td>${esc(p.name)}</td><td>${eur(m[p.id].gave)}</td><td>${eur(m[p.id].took)}</td><td class="${cls(n)}">${signed(n)}</td></tr>`);
+    });
+    const log=$("log"); log.innerHTML="";
+    if(!state.loans.length){ log.innerHTML='<li class="empty">No loans yet. Record the first one above.</li>'; }
+    [...state.loans].reverse().forEach(l=>{
+      const li=document.createElement("li");
+      const t=new Date(l.time); const hh=String(t.getHours()).padStart(2,"0")+":"+String(t.getMinutes()).padStart(2,"0");
+      li.innerHTML=`<span class="t">${hh}</span><span class="d"><span class="pos">${esc(nameOf(l.from))} +${eur(l.amount).slice(1)}</span> &nbsp; <span class="neg">${esc(nameOf(l.to))} −${eur(l.amount).slice(1)}</span></span>`;
+      const x=document.createElement("button"); x.className="x"; x.setAttribute("aria-label","Delete this loan"); x.textContent="×";
+      x.onclick=()=>{ ask(`Delete loan: ${nameOf(l.from)} gave ${eur(l.amount)} to ${nameOf(l.to)}?`,"Delete",()=>{ state.loans=state.loans.filter(z=>z!==l); save(); renderAll(); toast("Loan deleted"); }); };
+      li.appendChild(x); log.appendChild(li);
+    });
+    $("undo").disabled = !state.loans.length;
+    $("potTotal").textContent = eur(state.players.length*state.buyIn);
+  }
+
+  function renderSettle(){
+    const grid=$("finalGrid"); 
+    if(grid.dataset.sig !== state.players.map(p=>p.id).join()){
+      grid.innerHTML=""; grid.dataset.sig = state.players.map(p=>p.id).join();
+      state.players.forEach(p=>{
+        const lab=document.createElement("label"); lab.textContent=p.name; lab.htmlFor="f_"+p.id;
+        const inp=document.createElement("input"); inp.type="number"; inp.inputMode="decimal"; inp.step="0.1"; inp.min="0";
+        inp.id="f_"+p.id; inp.placeholder="0";
+        inp.value = state.finals[p.id] ?? "";
+        inp.oninput=()=>{ const v=inp.value; if(v==="") delete state.finals[p.id]; else state.finals[p.id]=parseFloat(v); save(); renderResults(); };
+        grid.appendChild(lab); grid.appendChild(inp);
+      });
+    }
+    renderResults();
+  }
+
+  function results(){
+    const m=nets();
+    return state.players.map(p=>{
+      const fin = typeof state.finals[p.id]==="number" && !isNaN(state.finals[p.id]) ? state.finals[p.id] : 0;
+      const loan = m[p.id].gave - m[p.id].took;
+      return {id:p.id, name:p.name, fin, loan, res: Math.round((fin+loan-state.buyIn)*100)/100};
+    });
+  }
+
+  function settle(rs){
+    const cred=rs.filter(r=>r.res>0.004).map(r=>({name:r.name,amt:r.res})).sort((a,b)=>b.amt-a.amt);
+    const debt=rs.filter(r=>r.res<-0.004).map(r=>({name:r.name,amt:-r.res})).sort((a,b)=>b.amt-a.amt);
+    const out=[]; let i=0,j=0;
+    while(i<debt.length && j<cred.length){
+      const x=Math.min(debt[i].amt,cred[j].amt);
+      if(x>0.004) out.push({from:debt[i].name,to:cred[j].name,amt:Math.round(x*100)/100});
+      debt[i].amt-=x; cred[j].amt-=x;
+      if(debt[i].amt<0.005) i++;
+      if(cred[j].amt<0.005) j++;
+    }
+    return out;
+  }
+
+  function renderResults(){
+    const rs=results();
+    const body=$("resultBody"); body.innerHTML="";
+    rs.slice().sort((a,b)=>b.res-a.res).forEach(r=>{
+      body.insertAdjacentHTML("beforeend",
+        `<tr><td>${esc(r.name)}</td><td>${eur(r.fin)}</td><td class="${cls(r.loan)}">${signed(r.loan)}</td><td class="${cls(r.res)}">${signed(r.res)}</td></tr>`);
+    });
+    const entered = state.players.filter(p=>typeof state.finals[p.id]==="number").length;
+    const totalFinal = rs.reduce((s,r)=>s+r.fin,0);
+    const expected = state.players.length*state.buyIn;
+    const diff = Math.round((totalFinal-expected)*100)/100;
+    const msg=$("checkMsg");
+    if(entered < state.players.length){
+      msg.innerHTML=`<div class="warn">${state.players.length-entered} player(s) still need a final balance. Total so far ${eur(totalFinal)} of ${eur(expected)}.</div>`;
+    } else if(Math.abs(diff)>0.004){
+      msg.innerHTML=`<div class="warn">Final balances add up to ${eur(totalFinal)}, but ${eur(expected)} was on the table. ${diff>0?"There is "+eur(diff)+" too much":"There is "+eur(-diff)+" missing"}. Recount before paying.</div>`;
+    } else {
+      msg.innerHTML=`<div class="ok">Totals match: ${eur(totalFinal)} on the table.</div>`;
+    }
+    const list=$("payList"); list.innerHTML="";
+    if(entered < state.players.length){
+      list.innerHTML=`<li class="empty">Enter every player's final balance to see the payments.</li>`;
+      return;
+    }
+    const pays=settle(rs);
+    if(!pays.length) list.innerHTML='<li class="empty">Everyone is even. Nobody needs to pay.</li>';
+    pays.forEach(p=>list.insertAdjacentHTML("beforeend",`<li><b>${esc(p.from)}</b> sends to <b>${esc(p.to)}</b><span class="amt">${eur(p.amt)}</span></li>`));
+    const gap=Math.round(rs.reduce((s,r)=>s+r.res,0)*100)/100;
+    if(Math.abs(gap)>0.004) list.insertAdjacentHTML("beforeend",`<li class="warn" style="border:0">${eur(Math.abs(gap))} ${gap>0?"is still owed to winners but no one has it to pay":"is left over after all payments"}. This comes from the final balances not matching the money on the table. Recount before settling.</li>`);
+  }
+
+  function summaryText(){
+    const rs=results().sort((a,b)=>b.res-a.res);
+    let s="3 Patti result\n\n";
+    rs.forEach(r=>{ s+=`${r.name}: ${signed(r.res).replace("−","-")}\n`; });
+    const pays=settle(rs);
+    if(pays.length){ s+="\nWho sends to whom\n"; pays.forEach(p=>s+=`${p.from} sends ${eur(p.amt)} to ${p.to}\n`); }
+    return s;
+  }
+
+  function copy(text){
+    const done=()=>toast("Summary copied");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(()=>fallback());
+    } else fallback();
+    function fallback(){
+      const ta=document.createElement("textarea"); ta.className="copy"; ta.value=text; document.body.appendChild(ta);
+      ta.select(); try{ document.execCommand("copy"); done(); }catch(e){ toast("Copy failed. Use Send result to WhatsApp instead"); }
+      ta.remove();
+    }
+  }
+
+  function renderSetup(){
+    const el=$("names"); el.innerHTML="";
+    state.players.forEach(p=>{
+      const row=document.createElement("div"); row.className="n";
+      const inp=document.createElement("input"); inp.type="text"; inp.value=p.name; inp.setAttribute("aria-label","Player name");
+      inp.onchange=()=>{ const v=inp.value.trim(); if(v){ p.name=v; save(); $("finalGrid").dataset.sig=""; renderAll(); } else inp.value=p.name; };
+      const del=document.createElement("button"); del.className="ghost"; del.textContent="×"; del.setAttribute("aria-label","Remove "+p.name);
+      del.onclick=()=>{
+        if(state.loans.some(l=>l.from===p.id||l.to===p.id)){ toast(p.name+" has loans. Delete them first or start a new game"); return; }
+        ask("Remove "+p.name+"?","Remove",()=>{ state.players=state.players.filter(z=>z!==p); delete state.finals[p.id]; save(); renderAll(); toast(p.name+" removed"); });
+      };
+      row.appendChild(inp); row.appendChild(del); el.appendChild(row);
+    });
+    $("buyIn").value=state.buyIn;
+  }
+
+  function renderAll(){ renderPlay(); renderSettle(); renderSetup(); }
+
+  $("customAmount").addEventListener("input",()=>{ sel.amount=null; renderPlay(); });
+  $("addLoan").onclick=()=>{
+    const amt=currentAmount(); if(!(sel.lender&&sel.borrower&&amt)) return;
+    state.loans.push({from:sel.lender,to:sel.borrower,amount:Math.round(amt*100)/100,time:Date.now()});
+    save();
+    toast(`${nameOf(sel.lender)} +${amt}, ${nameOf(sel.borrower)} −${amt}`);
+    sel.lender=null; sel.borrower=null; sel.amount=null; $("customAmount").value="";
+    renderAll();
+  };
+  $("undo").onclick=()=>{ const l=state.loans[state.loans.length-1]; if(!l) return;
+    ask(`Undo: ${nameOf(l.from)} gave ${eur(l.amount)} to ${nameOf(l.to)}?`,"Undo",()=>{ state.loans.pop(); save(); renderAll(); toast("Last loan removed"); }); };
+  $("copySummary").onclick=()=>copy(summaryText());
+  $("finishGame").onclick=()=>{
+    const missing=state.players.filter(p=>typeof state.finals[p.id]!=="number").map(p=>p.name);
+    if(missing.length){ toast("Missing final balance: "+missing.join(", ")); return; }
+    const pp=$("payPanel"); pp.scrollIntoView({behavior:"smooth",block:"start"}); pp.focus({preventScroll:true});
+    pp.classList.add("flash"); setTimeout(()=>pp.classList.remove("flash"),1500);
+  };
+  $("sendWhatsApp").addEventListener("click",()=>{
+    $("sendWhatsApp").href="https://wa.me/?text="+encodeURIComponent(summaryText());
+  });
+  function addPlayer(){ const v=$("newName").value.trim(); if(!v) return;
+    if(state.players.some(p=>p.name.toLowerCase()===v.toLowerCase())){ toast(v+" is already playing"); return; }
+    state.players.push({id:"p"+(state.nextId++),name:v}); $("newName").value=""; save(); renderAll(); toast(v+" added"); $("newName").focus(); }
+  $("addPlayer").onclick=addPlayer;
+  $("newName").addEventListener("keydown",e=>{ if(e.key==="Enter") addPlayer(); });
+  $("editPlayers").onclick=()=>showTab("setup");
+  $("clearPlayers").onclick=()=>{
+    if(state.loans.length){ toast("Start a new game first, then remove players"); return; }
+    ask("Remove all players?","Remove all",()=>{ state.players=[]; state.finals={}; save(); renderAll(); toast("All players removed"); }); };
+  $("buyIn").onchange=()=>{ const v=parseFloat($("buyIn").value); if(!isNaN(v)&&v>=0){ state.buyIn=v; save(); renderAll(); } };
+  $("resetGame").onclick=()=>{ ask("Start a new game? All loans and final balances will be cleared.","Start new game",()=>{
+    state.loans=[]; state.finals={}; save(); $("finalGrid").dataset.sig=""; renderAll(); showTab("play"); toast("New game started"); }); };
+
+  function showTab(name){
+    document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===name?"true":"false"));
+    ["play","settle","setup"].forEach(t=>$("tab-"+t).hidden = t!==name);
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
